@@ -7,7 +7,7 @@ use Template::Flute;
 
 use base 'Dancer::Template::Abstract';
 
-our $VERSION = '0.0001';
+our $VERSION = '0.0002';
 
 =head1 NAME
 
@@ -15,7 +15,7 @@ Dancer::Template::TemplateFlute - Template::Flute wrapper for Dancer
 
 =head1 VERSION
 
-Version 0.0001
+Version 0.0002
 
 =head1 DESCRIPTION
 
@@ -46,15 +46,18 @@ sub default_tmpl_ext {
 
 sub render ($$$) {
 	my ($self, $template, $tokens) = @_;
-	my ($flute);
+	my ($flute, $html);
 
 	# derive file name for specification from template file names
 	$flute = new Template::Flute(template_file => $template,
-							   scopes => 1,
-							   values => $tokens,
+								 scopes => 1,
+								 auto_iterators => 1,
+								 values => $tokens,
 							  );
 	
-	return $flute->process();
+	$html = $flute->process();
+
+	return $html;
 }
 
 =head1 SEE ALSO
