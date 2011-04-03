@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Dancer-Template-TemplateFlute
-version:            0.0002
+version:            0.0003
 abstract:           Template::Flute wrapper for Dancer
 author:
     - Stefan Hornburg (Racke) <racke@linuxia.de>
@@ -12,7 +12,7 @@ build_requires:
     ExtUtils::MakeMaker:  0
 requires:
     Dancer:           0
-    Template::Flute:  0.0003
+    Template::Flute:  0.0006
     Test::More:       0
 no_index:
     directory:
