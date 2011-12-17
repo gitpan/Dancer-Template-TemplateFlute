@@ -4,11 +4,14 @@ use strict;
 use warnings;
 
 use Template::Flute;
+use Template::Flute::Iterator;
 use Template::Flute::Utils;
+
+use Dancer::Config;
 
 use base 'Dancer::Template::Abstract';
 
-our $VERSION = '0.0003';
+our $VERSION = '0.0023';
 
 =head1 NAME
 
@@ -16,7 +19,7 @@ Dancer::Template::TemplateFlute - Template::Flute wrapper for Dancer
 
 =head1 VERSION
 
-Version 0.0003
+Version 0.0023
 
 =head1 DESCRIPTION
 
@@ -33,13 +36,26 @@ The default template extension is ".html".
 
 Iterators can be specified explicitly in the configuration file as below.
 
-engines:
-  template_flute:
-    iterators:
-      fruits:
-        class: JSON
-        file: fruits.json
+  engines:
+    template_flute:
+      iterators:
+        fruits:
+          class: JSON
+          file: fruits.json
 
+=head2 FILTER OPTIONS
+
+Filter options and classes can be specified in the configuration file as below.
+
+  engines:
+    template_flute:
+      filters:
+        currency:
+          options:
+            int_curr_symbol: "$"
+        image:
+          class: "Flowers::Filters::Image"
+    
 =head1 METHODS
 
 =head2 default_tmpl_ext
@@ -58,23 +74,28 @@ sub default_tmpl_ext {
 
 sub render ($$$) {
 	my ($self, $template, $tokens) = @_;
-	my ($flute, $html, $name, $value, %parms, %template_iterators, %iterators, $class);
+	my (%args, $flute, $html, $name, $value, %parms, %template_iterators, %iterators, $class);
 
-	$flute = new Template::Flute(template_file => $template,
-								 scopes => 1,
-								 auto_iterators => 1,
-								 values => $tokens,
-								);
+	%args = (template_file => $template,
+		 scopes => 1,
+		 auto_iterators => 1,
+		 values => $tokens,
+		 filters => $self->config->{filters},
+	    );
+
+	$flute = Template::Flute->new(%args);
 
 	# process HTML template to determine iterators used by template
 	$flute->process_template();
 
 	# instantiate iterators where object isn't yet available
 	if (%template_iterators = $flute->template()->iterators) {
+	    my $selector;
+
 		for my $name (keys %template_iterators) {
 			if ($value = $self->config->{iterators}->{$name}) {
 				%parms = %$value;
-			
+				
 				$class = "Template::Flute::Iterator::$parms{class}";
 
 				if ($parms{file}) {
@@ -82,9 +103,14 @@ sub render ($$$) {
 																		   $parms{file}, 1);
 				}
 
+				if (($selector = delete $parms{selector})
+				    && $tokens->{$selector}) {
+				    $parms{selector} = {$selector => $tokens->{$selector}};
+				}
+
 				eval "require $class";
 				if ($@) {
-					die "Failed to load class $class as specification parser: $@\n";
+					die "Failed to load class $class for iterator $name: $@\n";
 				}
 
 				eval {
@@ -92,7 +118,7 @@ sub render ($$$) {
 				};
 				
 				if ($@) {
-					die "Failed to instantiate class $class as specification parser: $@\n";
+					die "Failed to instantiate class $class for iterator $name: $@\n";
 				}
 
 				$flute->specification->set_iterator($name, $iterators{$name});
@@ -100,6 +126,35 @@ sub render ($$$) {
 		}
 	}
 
+	# check for forms
+	my (@forms, $iter, $action);
+	
+	if (@forms = $flute->template->forms()) {
+	    if (@forms == 1) {
+		unless ($tokens->{form}) {
+		    die "Missing form parameters for form " . $forms[0]->name;
+		}
+		    
+		for my $name ($forms[0]->iterators) {
+		    if (ref($tokens->{$name}) eq 'ARRAY') {
+			$iter = Template::Flute::Iterator->new($tokens->{$name});
+			$flute->specification->set_iterator($name, $iter);
+		    }
+		}
+
+		$forms[0]->set_action($tokens->{form}->action());
+		$tokens->{form}->fields([map {$_->{name}} @{$forms[0]->fields()}]);
+		$forms[0]->fill($tokens->{form}->fill());
+
+		if (Dancer::Config::settings->{session}) {
+		    $tokens->{form}->to_session;
+		}
+	    }
+	    else {
+		die "Got multiple (", scalar(@forms), ") forms.";
+	    }
+	}
+	
 	$html = $flute->process();
 
 	return $html;

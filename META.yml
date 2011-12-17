@@ -1,24 +1,24 @@
---- #YAML:1.0
-name:               Dancer-Template-TemplateFlute
-version:            0.0003
-abstract:           Template::Flute wrapper for Dancer
+---
+abstract: 'Template::Flute wrapper for Dancer'
 author:
-    - Stefan Hornburg (Racke) <racke@linuxia.de>
-license:            perl
-distribution_type:  module
-configure_requires:
-    ExtUtils::MakeMaker:  0
+  - 'Stefan Hornburg (Racke) <racke@linuxia.de>'
 build_requires:
-    ExtUtils::MakeMaker:  0
-requires:
-    Dancer:           0
-    Template::Flute:  0.0006
-    Test::More:       0
-no_index:
-    directory:
-        - t
-        - inc
-generated_by:       ExtUtils::MakeMaker version 6.55_02
+  ExtUtils::MakeMaker: 0
+configure_requires:
+  ExtUtils::MakeMaker: 0
+dynamic_config: 1
+generated_by: 'ExtUtils::MakeMaker version 6.62, CPAN::Meta::Converter version 2.112150'
+license: perl
 meta-spec:
-    url:      http://module-build.sourceforge.net/META-spec-v1.4.html
-    version:  1.4
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Dancer-Template-TemplateFlute
+no_index:
+  directory:
+    - t
+    - inc
+requires:
+  Dancer: 0
+  Template::Flute: 0.0023
+  Test::More: 0
+version: 0.0023
