@@ -11,7 +11,7 @@ use Dancer::Config;
 
 use base 'Dancer::Template::Abstract';
 
-our $VERSION = '0.0023';
+our $VERSION = '0.0024';
 
 =head1 NAME
 
@@ -19,7 +19,7 @@ Dancer::Template::TemplateFlute - Template::Flute wrapper for Dancer
 
 =head1 VERSION
 
-Version 0.0023
+Version 0.0024
 
 =head1 DESCRIPTION
 
@@ -55,6 +55,11 @@ Filter options and classes can be specified in the configuration file as below.
             int_curr_symbol: "$"
         image:
           class: "Flowers::Filters::Image"
+
+=head2 FORMS
+
+Dancer::Template::TemplateFlute includes a form plugin L<Dancer::Plugin::Form>,
+which supports L<Template::Flute> forms.
     
 =head1 METHODS
 
