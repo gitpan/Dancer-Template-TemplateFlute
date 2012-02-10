@@ -81,7 +81,7 @@ sub new {
 
     $class = shift;
 
-    $self = {fields => [], errors => []};
+    $self = {fields => [], errors => [], valid => undef};
     bless $self;
 
     %params = @_;
@@ -101,6 +101,20 @@ sub new {
     $self->from_session();
     
     return $self;
+}
+
+=head2 name
+
+Get form name:
+
+    $form->name
+
+=cut
+
+sub name {
+    my $self = shift;
+
+    return $self->{name};
 }
 
 =head2 action
@@ -196,6 +210,44 @@ sub values {
     return \%values;
 }
 
+=head2 valid
+
+Determine whether form values are valid:
+
+    $form->valid();
+
+Return values are 1 (valid), 0 (invalid) or
+undef (unknown).
+
+Set form status to "valid":
+    
+    $form->valid(1);
+
+Set form status to "invalid":
+    
+    $form->valid(0);
+
+The form status automatically changes to
+"invalid" when errors method is called with
+error messages.
+    
+=cut
+
+sub valid {
+    my $self = shift;
+    my $valid = shift;
+
+    if (defined $valid) {
+	Dancer::Logger::debug("Setting valid for $self->{name} to $valid.");
+	$self->{valid} = $valid;
+
+	# record changes in user's session
+	$self->to_session;
+    }
+
+    return $self->{valid};
+}
+
 =head2 errors
     
 Set form errors:
@@ -220,6 +272,8 @@ sub errors {
 	    }
 	    $self->{errors} = \@buf;
 	}
+
+	$self->{valid} = 0;
     }
 
     return $self->{errors};
@@ -312,6 +366,8 @@ sub from_session {
 	$self->{fields} = $form->{fields} || [];
 	$self->{errors} = $form->{errors} || [];
 	$self->{values} = $form->{values} || {};
+	$self->{valid} = $form->{valid};
+	
 	return 1;
     } 	
 
@@ -337,6 +393,7 @@ sub to_session {
 				   fields => $self->{fields},
 				   errors => $self->{errors},
 				   values => $self->{values},
+				   valid => $self->{valid},
     };
     
     # update form information
