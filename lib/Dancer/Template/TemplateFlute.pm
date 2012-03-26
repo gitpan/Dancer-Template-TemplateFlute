@@ -11,7 +11,7 @@ use Dancer::Config;
 
 use base 'Dancer::Template::Abstract';
 
-our $VERSION = '0.0025';
+our $VERSION = '0.0030';
 
 =head1 NAME
 
@@ -19,7 +19,7 @@ Dancer::Template::TemplateFlute - Template::Flute wrapper for Dancer
 
 =head1 VERSION
 
-Version 0.0025
+Version 0.0030
 
 =head1 DESCRIPTION
 
@@ -136,7 +136,10 @@ sub render ($$$) {
 	
 	if (@forms = $flute->template->forms()) {
 	    if (@forms == 1) {
-		if ($tokens->{form}) {
+		# select correct form
+		if ($tokens->{form} && ($tokens->{form}->name eq 'main' 
+		    || $tokens->{form}->name eq $forms[0]->name)) {
+
 		    for my $name ($forms[0]->iterators) {
 			if (ref($tokens->{$name}) eq 'ARRAY') {
 			    $iter = Template::Flute::Iterator->new($tokens->{$name});
@@ -209,7 +212,7 @@ L<http://search.cpan.org/dist/Dancer-Template-TemplateFlute/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2011 Stefan Hornburg (Racke) <racke@linuxia.de>.
+Copyright 2011-2012 Stefan Hornburg (Racke) <racke@linuxia.de>.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

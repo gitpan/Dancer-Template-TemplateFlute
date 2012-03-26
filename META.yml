@@ -21,4 +21,4 @@ requires:
   Dancer: 0
   Template::Flute: 0.0023
   Test::More: 0
-version: 0.0025
+version: 0.0030

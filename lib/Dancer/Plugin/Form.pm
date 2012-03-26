@@ -14,11 +14,11 @@ Dancer::Plugin::Form - Dancer form handler for Template::Flute template engine
 
 =head1 VERSION
 
-Version 0.0024
+Version 0.0030
 
 =cut
 
-our $VERSION = '0.0024';
+our $VERSION = '0.0030';
 
 =head1 SYNOPSIS
 
@@ -40,6 +40,12 @@ Retrieve form input from checkout form:
         $form = form('checkout');
         $values = $form->values();
     };
+
+Reset form after completion to prevent old data from
+showing up on new form:
+
+    $form = form('checkout');
+    $form->reset;
 
 =cut
 
@@ -349,6 +355,25 @@ sub fields {
     return $self->{fields};    
 }
 
+=head2 reset
+
+Reset form information (fields, errors, values, valid) and
+updates session accordingly.
+
+=cut
+
+sub reset {
+    my $self = shift;
+
+    $self->{fields} = [];
+    $self->{errors} = [];
+    $self->{values} = {};
+    $self->{valid} = undef;
+    $self->to_session;
+
+    return 1;
+}
+
 =head2 from_session
 
 Loads form data from session key 'form'.
@@ -448,7 +473,7 @@ L<http://search.cpan.org/dist/Dancer-Template-TemplateFlute/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2011 Stefan Hornburg (Racke).
+Copyright 2011-2012 Stefan Hornburg (Racke).
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
