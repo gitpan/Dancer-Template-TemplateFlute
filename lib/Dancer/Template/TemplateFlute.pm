@@ -11,7 +11,7 @@ use Dancer::Config;
 
 use base 'Dancer::Template::Abstract';
 
-our $VERSION = '0.0030';
+our $VERSION = '0.0060';
 
 =head1 NAME
 
@@ -19,7 +19,7 @@ Dancer::Template::TemplateFlute - Template::Flute wrapper for Dancer
 
 =head1 VERSION
 
-Version 0.0030
+Version 0.0060
 
 =head1 DESCRIPTION
 
@@ -108,9 +108,13 @@ sub render ($$$) {
 																		   $parms{file}, 1);
 				}
 
-				if (($selector = delete $parms{selector})
-				    && $tokens->{$selector}) {
-				    $parms{selector} = {$selector => $tokens->{$selector}};
+				if ($selector = delete $parms{selector}) {
+				    if ($selector eq '*') {
+					$parms{selector} = '*';
+                                    }
+				    elsif ($tokens->{$selector}) {
+					$parms{selector} = {$selector => $tokens->{$selector}};
+				    }
 				}
 
 				eval "require $class";
@@ -147,7 +151,10 @@ sub render ($$$) {
 			}
 		    }
 
-		    $forms[0]->set_action($tokens->{form}->action());
+            if ($action = $tokens->{form}->action()) {
+                $forms[0]->set_action($action);
+            }
+
 		    $tokens->{form}->fields([map {$_->{name}} @{$forms[0]->fields()}]);
 		    $forms[0]->fill($tokens->{form}->fill());
 
@@ -212,7 +219,7 @@ L<http://search.cpan.org/dist/Dancer-Template-TemplateFlute/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2011-2012 Stefan Hornburg (Racke) <racke@linuxia.de>.
+Copyright 2011-2013 Stefan Hornburg (Racke) <racke@linuxia.de>.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

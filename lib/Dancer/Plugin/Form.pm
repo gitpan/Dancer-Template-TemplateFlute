@@ -14,11 +14,11 @@ Dancer::Plugin::Form - Dancer form handler for Template::Flute template engine
 
 =head1 VERSION
 
-Version 0.0030
+Version 0.0060
 
 =cut
 
-our $VERSION = '0.0030';
+our $VERSION = '0.0060';
 
 =head1 SYNOPSIS
 
@@ -473,7 +473,7 @@ L<http://search.cpan.org/dist/Dancer-Template-TemplateFlute/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2011-2012 Stefan Hornburg (Racke).
+Copyright 2011-2013 Stefan Hornburg (Racke).
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
