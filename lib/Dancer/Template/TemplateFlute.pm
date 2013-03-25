@@ -11,7 +11,7 @@ use Dancer::Config;
 
 use base 'Dancer::Template::Abstract';
 
-our $VERSION = '0.0060';
+our $VERSION = '0.0061';
 
 =head1 NAME
 
@@ -19,7 +19,7 @@ Dancer::Template::TemplateFlute - Template::Flute wrapper for Dancer
 
 =head1 VERSION
 
-Version 0.0060
+Version 0.0061
 
 =head1 DESCRIPTION
 
@@ -31,6 +31,23 @@ In order to use this engine, use the template setting:
     template: template_flute
 
 The default template extension is ".html".
+
+=head2 LAYOUT
+
+Each layout needs a specification file and a template file. To embed
+the content of your current view into the layout, put the following
+into your specification file, e.g. F<views/layouts/main.xml>:
+
+    <specification>
+    <value name="content" id="content" op="hook"/>
+    </specification>
+
+This replaces the contents of the following block in your HTML
+template, e.g. F<views/layouts/main.html>:
+
+    <div id="content">
+    Your content
+    </div>
 
 =head2 ITERATORS
 
