@@ -16,4 +16,4 @@ no_index:
     - inc
 resources:
   repository: https://github.com/racke/Dancer-Template-TemplateFlute.git
-version: 0.0099
+version: 0.0101
