@@ -150,9 +150,9 @@ sub action {
 Fill form values:
 
     $form->fill({username => 'racke', email => 'racke@linuxia.de'});
-    
+
 =cut
-    
+
 sub fill {
     my ($self);
 
@@ -391,7 +391,6 @@ session.
 =cut
 
 sub pristine {
-    warn "Pristine is now: ", $_[0]->{pristine};
     return $_[0]->{pristine};
 };
 
@@ -435,8 +434,11 @@ sub from_session {
             $self->{values} = $form->{values} || {};
             $self->{valid} = $form->{valid};
 
-            if (keys %{$self->{values}}) {
-                $self->{pristine} = 0;
+            while (my ($key, $value) = each %{$self->{values}}) {
+                if (defined $value) {
+                    $self->{pristine} = 0;
+                    last;
+                }
             }
 
             return 1;
