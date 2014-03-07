@@ -13,7 +13,7 @@ use Dancer::Config;
 
 use base 'Dancer::Template::Abstract';
 
-our $VERSION = '0.0103';
+our $VERSION = '0.0104';
 
 =head1 NAME
 
@@ -21,7 +21,7 @@ Dancer::Template::TemplateFlute - Template::Flute wrapper for Dancer
 
 =head1 VERSION
 
-Version 0.0103
+Version 0.0104
 
 =head1 DESCRIPTION
 
@@ -74,6 +74,25 @@ Filter options and classes can be specified in the configuration file as below.
             int_curr_symbol: "$"
         image:
           class: "Flowers::Filters::Image"
+
+=head2 DISABLE OBJECT AUTODETECTION
+
+Sometimes you want to pass values to a template which are objects, but
+don't have an accessor, so they should be treated like hashrefs instead.
+
+By default, the class C<Dancer::Session::Abstract> is treated this way. You
+can specify additional classes with the following syntax:
+
+  engines:
+    template_flute:
+      autodetect:
+        disable:
+          - My::Class1
+          - My::Class2
+
+
+The class matching is checked by L<Template::Flute> with C<isa>, so
+any parent class would do.
 
 =head2 LOCALIZATION
 
@@ -153,6 +172,23 @@ This will call
 
 when the engine is initialized, and will call the C<localize> method
 on it to get the translations.
+
+=head2 DEBUG TOOLS
+
+If you set C<check_dangling> in the engine stanza, the specification
+will run a check (using the L<Template::Flute::Specification>'s
+C<dangling> method) against the template to see if you have elements
+of the specifications which are not bound to any HTML elements.
+
+In this case a debug message is issued (so keep in mind that with
+higher logging level you are not going to see it).
+
+Example configuration:
+
+  engines:
+    template_flute:
+      check_dangling: 1
+
 
 =head2 FORMS
 
@@ -352,10 +388,16 @@ sub render ($$$) {
 		 auto_iterators => 1,
 		 values => $tokens,
 		 filters => $self->config->{filters},
+		 autodetect => { disable => [qw/Dancer::Session::Abstract/] },
 	    );
 
     if (my $i18n = $self->_i18n_obj) {
         $args{i18n} = $i18n;
+    }
+
+    if ($self->config->{autodetect} && $self->config->{autodetect}->{disable}) {
+        push @{$args{autodetect}{disable}},
+          @{$self->config->{autodetect}->{disable}};
     }
 
 	$flute = Template::Flute->new(%args);
@@ -417,6 +459,15 @@ sub render ($$$) {
     }
 	$html = $flute->process();
 
+    if ($self->config->{check_dangling}) {
+        if (my @warnings = $flute->specification->dangling) {
+            foreach my $warn (@warnings) {
+                Dancer::Logger::debug('Found dangling element '
+                                        . $warn->{type} . ' ' . $warn->{name}
+                                        . ' (' . $warn->{dump} . ')');
+            }
+        }
+    }
 	return $html;
 }
 
