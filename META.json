@@ -33,7 +33,7 @@
       "runtime" : {
          "requires" : {
             "Dancer" : "0",
-            "Template::Flute" : "0.0104",
+            "Template::Flute" : "0.0106",
             "Test::More" : "0"
          }
       }
@@ -47,5 +47,5 @@
          "x_bugtracker" : "https://github.com/racke/Dancer-Template-TemplateFlute/issues"
       }
    },
-   "version" : "0.0104"
+   "version" : "0.0106"
 }

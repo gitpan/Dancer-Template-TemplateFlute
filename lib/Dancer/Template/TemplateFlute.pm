@@ -13,7 +13,7 @@ use Dancer::Config;
 
 use base 'Dancer::Template::Abstract';
 
-our $VERSION = '0.0104';
+our $VERSION = '0.0106';
 
 =head1 NAME
 
@@ -21,7 +21,7 @@ Dancer::Template::TemplateFlute - Template::Flute wrapper for Dancer
 
 =head1 VERSION
 
-Version 0.0104
+Version 0.0106
 
 =head1 DESCRIPTION
 
@@ -74,6 +74,11 @@ Filter options and classes can be specified in the configuration file as below.
             int_curr_symbol: "$"
         image:
           class: "Flowers::Filters::Image"
+
+=head2 ADJUSTING URIS
+
+We automatically adjust links in the templates if the value of
+C<request->path> is different from C<request->path_info>.
 
 =head2 DISABLE OBJECT AUTODETECTION
 
@@ -390,6 +395,14 @@ sub render ($$$) {
 		 filters => $self->config->{filters},
 		 autodetect => { disable => [qw/Dancer::Session::Abstract/] },
 	    );
+
+    # determine whether we need to pass an adjust URI to Template::Flute
+    my $request = $tokens->{request};
+    my $pos = index($request->path, $request->path_info);
+
+    if ($pos > 0) {
+        $args{uri} = substr($request->path, 0, $pos);
+    }
 
     if (my $i18n = $self->_i18n_obj) {
         $args{i18n} = $i18n;
