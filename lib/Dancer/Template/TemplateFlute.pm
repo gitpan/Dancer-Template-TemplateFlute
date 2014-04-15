@@ -13,7 +13,7 @@ use Dancer::Config;
 
 use base 'Dancer::Template::Abstract';
 
-our $VERSION = '0.0106';
+our $VERSION = '0.0113';
 
 =head1 NAME
 
@@ -21,7 +21,7 @@ Dancer::Template::TemplateFlute - Template::Flute wrapper for Dancer
 
 =head1 VERSION
 
-Version 0.0106
+Version 0.0113
 
 =head1 DESCRIPTION
 
@@ -79,6 +79,13 @@ Filter options and classes can be specified in the configuration file as below.
 
 We automatically adjust links in the templates if the value of
 C<request->path> is different from C<request->path_info>.
+
+=head2 EMBEDDING IMAGES IN EMAILS
+
+If you pass a value named C<email_cids>, which should be an empty hash
+reference, all the images C<src> attributes will be rewritten using
+the CIDs, and the reference will be populated with an hashref, as
+documented in L<Template::Flute>
 
 =head2 DISABLE OBJECT AUTODETECTION
 
@@ -397,15 +404,19 @@ sub render ($$$) {
 	    );
 
     # determine whether we need to pass an adjust URI to Template::Flute
-    my $request = $tokens->{request};
-    my $pos = index($request->path, $request->path_info);
-
-    if ($pos > 0) {
-        $args{uri} = substr($request->path, 0, $pos);
+    if (my $request = $tokens->{request}) {
+        my $pos = index($request->path, $request->path_info);
+        if ($pos > 0) {
+            $args{uri} = substr($request->path, 0, $pos);
+        }
     }
 
     if (my $i18n = $self->_i18n_obj) {
         $args{i18n} = $i18n;
+    }
+
+    if (my $email_cids = $tokens->{email_cids}) {
+        $args{email_cids} = $email_cids;
     }
 
     if ($self->config->{autodetect} && $self->config->{autodetect}->{disable}) {
@@ -470,6 +481,10 @@ sub render ($$$) {
                                   join(", ", sort map { $_->name } @forms));
         }
     }
+    elsif ($tokens->{form}) {
+        Dancer::Logger::debug('Form passed, but no forms found in the template.');
+    }
+
 	$html = $flute->process();
 
     if ($self->config->{check_dangling}) {
@@ -477,7 +492,7 @@ sub render ($$$) {
             foreach my $warn (@warnings) {
                 Dancer::Logger::debug('Found dangling element '
                                         . $warn->{type} . ' ' . $warn->{name}
-                                        . ' (' . $warn->{dump} . ')');
+                                        . ' (' , $warn->{dump} , ')');
             }
         }
     }
