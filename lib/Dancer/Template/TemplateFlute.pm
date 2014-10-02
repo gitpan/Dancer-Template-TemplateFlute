@@ -8,12 +8,13 @@ use Template::Flute::Iterator;
 use Template::Flute::Utils;
 use Template::Flute::I18N;
 use Module::Load;
+use Scalar::Util qw/blessed/;
 
 use Dancer::Config;
 
 use base 'Dancer::Template::Abstract';
 
-our $VERSION = '0.0113';
+our $VERSION = '0.0140';
 
 =head1 NAME
 
@@ -21,7 +22,7 @@ Dancer::Template::TemplateFlute - Template::Flute wrapper for Dancer
 
 =head1 VERSION
 
-Version 0.0113
+Version 0.0140
 
 =head1 DESCRIPTION
 
@@ -86,6 +87,10 @@ If you pass a value named C<email_cids>, which should be an empty hash
 reference, all the images C<src> attributes will be rewritten using
 the CIDs, and the reference will be populated with an hashref, as
 documented in L<Template::Flute>
+
+Further options for the CIDs should be passed in an optional value
+named C<cids>. See L<Template::Flute> for them.
+
 
 =head2 DISABLE OBJECT AUTODETECTION
 
@@ -417,6 +422,10 @@ sub render ($$$) {
 
     if (my $email_cids = $tokens->{email_cids}) {
         $args{email_cids} = $email_cids;
+        # use the 'cids' tokens only if email_cids is defined
+        if (my $cid_options = $tokens->{cids}) {
+            $args{cids} = { %$cid_options };
+        }
     }
 
     if ($self->config->{autodetect} && $self->config->{autodetect}->{disable}) {
@@ -482,7 +491,9 @@ sub render ($$$) {
         }
     }
     elsif ($tokens->{form}) {
-        Dancer::Logger::debug('Form passed, but no forms found in the template.');
+        my $form_name = blessed($tokens->{form}) ? $tokens->{form}->name : $tokens->{form};
+
+        Dancer::Logger::debug("Form $form_name passed, but no forms found in the template $template.");
     }
 
 	$html = $flute->process();
